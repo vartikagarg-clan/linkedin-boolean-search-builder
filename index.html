@@ -523,11 +523,12 @@ input:focus { border-color: var(--accent); }
       Pro tips for Sales Navigator
     </div>
     <ul>
-      <li>Phrases in quotes find exact matches — use for specific job titles</li>
-      <li>OR broadens results (VP OR Director), AND narrows them</li>
+      <li>Paste this string into the LinkedIn People search bar or Sales Navigator keyword field</li>
+      <li>Phrases in quotes find exact matches — use for specific job titles like "VP Sales"</li>
+      <li>OR broadens results (VP OR Director), AND narrows them — keep it simple for more results</li>
       <li>NOT removes unwanted profiles — always exclude interns, students, freelancers</li>
-      <li>LinkedIn search strings work best under 1,000 characters</li>
-      <li>Combine with Sales Navigator filters (geography, industry) for laser precision</li>
+      <li>Company size can't be a keyword — apply it using LinkedIn's filter sidebar after searching</li>
+      <li>If you get zero results, remove some AND conditions — fewer terms = more results</li>
     </ul>
   </div>
 
@@ -594,31 +595,28 @@ function renderTags(field) {
 function buildString() {
   const parts = [];
 
-  // Titles
+  // Titles — plain quoted terms, no title: prefix (not supported in LinkedIn search bar)
   if (state.titleInclude.length > 0) {
-    const titleStr = state.titleInclude.map(t => `title:"${t}"`).join(` ${state.titleOp} `);
-    parts.push(state.titleInclude.length > 1 ? `(${titleStr})` : titleStr);
+    const titleStr = state.titleInclude.map(t => `"${t}"`).join(` ${state.titleOp} `);
+    parts.push(state.titleInclude.length > 1 ? `(${titleStr})` : `"${state.titleInclude[0]}"`);
   }
-  state.titleExclude.forEach(t => parts.push(`NOT title:"${t}"`));
+  state.titleExclude.forEach(t => parts.push(`NOT "${t}"`));
 
-  // Seniority
+  // Seniority — plain quoted keyword
   const sen = document.getElementById('seniority').value;
   if (sen) parts.push(`"${sen}"`);
 
-  // Industry
+  // Industry — plain quoted terms
   if (state.industry.length > 0) {
     const indStr = state.industry.map(i => `"${i}"`).join(' OR ');
     parts.push(state.industry.length > 1 ? `(${indStr})` : `"${state.industry[0]}"`);
   }
 
-  // Company size
-  const size = document.getElementById('companySize').value;
-  if (size) parts.push(`company_size:"${size}"`);
+  // Company size — note only, skip from string (not supported as keyword)
+  // Company excludes — plain NOT quoted
+  state.companyExclude.forEach(c => parts.push(`NOT "${c}"`));
 
-  // Company excludes
-  state.companyExclude.forEach(c => parts.push(`NOT company:"${c}"`));
-
-  // Location
+  // Location — plain quoted terms
   if (state.location.length > 0) {
     const locStr = state.location.map(l => `"${l}"`).join(' OR ');
     parts.push(state.location.length > 1 ? `(${locStr})` : `"${state.location[0]}"`);
@@ -647,10 +645,13 @@ function buildString() {
     .replace(/\b(AND)\b/g, '<span class="kw-and">AND</span>')
     .replace(/\b(OR)\b/g, '<span class="kw-or">OR</span>')
     .replace(/\b(NOT)\b/g, '<span class="kw-not">NOT</span>')
-    .replace(/(title:|company_size:|company:)/g, '<span class="kw-field">$1</span>')
     .replace(/"([^"]+)"/g, '<span class="kw-phrase">"$1"</span>');
 
-  outputEl.innerHTML = highlighted;
+  // Company size note
+  const size = document.getElementById('companySize').value;
+  const sizeNote = size ? `<div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,0.4);font-family:'Inconsolata',monospace;">⚠ Company size filter (${size}) — apply manually in LinkedIn's People filter sidebar</div>` : '';
+
+  outputEl.innerHTML = highlighted + sizeNote;
 
   const len = raw.length;
   countEl.textContent = `${len} characters`;
