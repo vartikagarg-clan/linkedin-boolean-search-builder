@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LinkedIn Boolean Search Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=Inconsolata:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --bg: #f7f5f0;
+  --card: #ffffff;
+  --card2: #f0ede6;
+  --border: #ddd9d0;
+  --text: #1a1816;
+  --muted: #8a8278;
+  --accent: #0a66c2;
+  --accent-light: #e8f0fb;
+  --green: #057642;
+  --green-light: #e8f5ee;
+  --tag-bg: #1a1816;
+  --tag-text: #f7f5f0;
+}
+
+body {
+  font-family: 'Space Grotesk', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+header {
+  background: var(--text);
+  color: #fff;
+  padding: 20px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+
+.logo-icon {
+  width: 32px; height: 32px;
+  background: #0a66c2;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 700; color: #fff;
+  font-family: 'Inconsolata', monospace;
+}
+
+.badge {
+  font-size: 11px;
+  background: rgba(255,255,255,0.15);
+  padding: 3px 10px;
+  border-radius: 20px;
+  color: rgba(255,255,255,0.7);
+  letter-spacing: 0.3px;
+}
+
+.main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 36px 24px 60px;
+}
+
+.section-title {
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 16px;
+}
+
+.field-row {
+  margin-bottom: 18px;
+}
+
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.label-hint {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 400;
+  margin-left: 6px;
+}
+
+.tag-input-wrap {
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  cursor: text;
+  background: #fff;
+  min-height: 44px;
+  transition: border-color 0.15s;
+}
+.tag-input-wrap:focus-within { border-color: var(--accent); }
+
+.tag {
+  background: var(--tag-bg);
+  color: var(--tag-text);
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'Inconsolata', monospace;
+  font-weight: 500;
+}
+.tag.or-tag { background: var(--accent); }
+.tag.not-tag { background: #c0392b; }
+
+.tag-remove {
+  cursor: pointer;
+  opacity: 0.6;
+  font-size: 13px;
+  line-height: 1;
+  padding: 0 1px;
+}
+.tag-remove:hover { opacity: 1; }
+
+.tag-input {
+  border: none;
+  outline: none;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  color: var(--text);
+  background: transparent;
+  flex: 1;
+  min-width: 120px;
+}
+
+.operator-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  align-items: center;
+}
+.op-label {
+  font-size: 11px;
+  color: var(--muted);
+  margin-right: 4px;
+}
+.op-btn {
+  font-size: 11px;
+  font-family: 'Inconsolata', monospace;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 5px;
+  border: 1.5px solid var(--border);
+  background: #fff;
+  cursor: pointer;
+  color: var(--muted);
+  letter-spacing: 0.3px;
+  transition: all 0.12s;
+}
+.op-btn:hover { border-color: var(--text); color: var(--text); }
+.op-btn.active-and { background: var(--tag-bg); color: #fff; border-color: var(--tag-bg); }
+.op-btn.active-or { background: var(--accent); color: #fff; border-color: var(--accent); }
+.op-btn.active-not { background: #c0392b; color: #fff; border-color: #c0392b; }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  background: #fff;
+  color: var(--text);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+select:focus { border-color: var(--accent); }
+
+input[type=text], input[type=number] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  background: #fff;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+input:focus { border-color: var(--accent); }
+
+.output-section {
+  background: var(--text);
+  border-radius: 14px;
+  padding: 28px;
+  margin-top: 8px;
+}
+
+.output-label {
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 10px;
+}
+
+.output-string {
+  font-family: 'Inconsolata', monospace;
+  font-size: 14px;
+  line-height: 1.8;
+  color: #fff;
+  word-break: break-all;
+  min-height: 48px;
+}
+
+.output-string .kw-and { color: #f0c060; font-weight: 600; }
+.output-string .kw-or  { color: #7ec8f5; font-weight: 600; }
+.output-string .kw-not { color: #f0776a; font-weight: 600; }
+.output-string .kw-phrase { color: #a8e6cf; }
+.output-string .kw-field { color: #c8b8f5; }
+
+.output-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+
+.btn-copy {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 7px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.btn-copy:hover { background: #085aad; }
+.btn-copy.copied { background: var(--green); }
+
+.btn-open {
+  background: transparent;
+  color: rgba(255,255,255,0.6);
+  border: 1.5px solid rgba(255,255,255,0.2);
+  padding: 10px 20px;
+  border-radius: 7px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  text-decoration: none;
+}
+.btn-open:hover { border-color: rgba(255,255,255,0.5); color: #fff; }
+
+.btn-reset {
+  background: transparent;
+  color: rgba(255,255,255,0.4);
+  border: none;
+  padding: 10px 14px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  margin-left: auto;
+  transition: color 0.15s;
+}
+.btn-reset:hover { color: rgba(255,255,255,0.8); }
+
+.char-count {
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+  margin-top: 10px;
+  font-family: 'Inconsolata', monospace;
+}
+.char-count.warn { color: #f0c060; }
+.char-count.error { color: #f0776a; }
+
+.tips {
+  background: var(--accent-light);
+  border: 1px solid #c5d9f5;
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-top: 16px;
+}
+.tips-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tips ul {
+  list-style: none;
+  font-size: 12px;
+  color: #2a5f9e;
+  line-height: 1.9;
+}
+.tips ul li::before { content: '→ '; opacity: 0.5; }
+
+.presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.preset-btn {
+  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--muted);
+  cursor: pointer;
+  font-family: 'Space Grotesk', sans-serif;
+  transition: all 0.12s;
+}
+.preset-btn:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 20px 0;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">in</div>
+    Boolean Search Builder
+  </div>
+  <div class="badge">Sales Navigator ready</div>
+</header>
+
+<div class="main">
+
+  <p style="font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.7;">Build precise LinkedIn boolean search strings for Sales Navigator or the standard search bar. Add terms, pick operators, and copy the result instantly.</p>
+
+  <div style="margin-bottom:8px;">
+    <div class="section-title">Quick presets</div>
+    <div class="presets">
+      <button class="preset-btn" onclick="loadPreset('saas')">SaaS Decision Makers</button>
+      <button class="preset-btn" onclick="loadPreset('hr')">HR & Talent Leaders</button>
+      <button class="preset-btn" onclick="loadPreset('finance')">Finance Executives</button>
+      <button class="preset-btn" onclick="loadPreset('startup')">Startup Founders</button>
+      <button class="preset-btn" onclick="loadPreset('marketing')">Marketing Heads</button>
+      <button class="preset-btn" onclick="loadPreset('strategic')">Strategic Decision Makers</button>
+      <button class="preset-btn" onclick="loadPreset('investors')">Investors & VCs</button>
+      <button class="preset-btn" onclick="loadPreset('operations')">Operations Leaders</button>
+      <button class="preset-btn" onclick="loadPreset('technology')">Tech & IT Leaders</button>
+      <button class="preset-btn" onclick="loadPreset('consulting')">Consultants & Advisors</button>
+      <button class="preset-btn" onclick="loadPreset('ecommerce')">E-commerce & Retail</button>
+      <button class="preset-btn" onclick="loadPreset('realestate')">Real Estate Leaders</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Job titles</div>
+    <div class="operator-row">
+      <span class="op-label">Connect terms with:</span>
+      <button class="op-btn active-or" id="titleOp-OR" onclick="setOp('title','OR')">OR</button>
+      <button class="op-btn" id="titleOp-AND" onclick="setOp('title','AND')">AND</button>
+    </div>
+    <div class="field-row">
+      <label>Include titles <span class="label-hint">press Enter to add</span></label>
+      <div class="tag-input-wrap" onclick="this.querySelector('input').focus()">
+        <div id="titleIncludeTags"></div>
+        <input class="tag-input" id="titleIncludeInput" placeholder='e.g. "VP Sales"' onkeydown="handleTagInput(event,'titleInclude')">
+      </div>
+    </div>
+    <div class="field-row">
+      <label>Exclude titles <span class="label-hint">press Enter to add</span></label>
+      <div class="tag-input-wrap" onclick="this.querySelector('input').focus()">
+        <div id="titleExcludeTags"></div>
+        <input class="tag-input" id="titleExcludeInput" placeholder='e.g. "Junior" "Intern"' onkeydown="handleTagInput(event,'titleExclude')">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Industry & company</div>
+    <div class="grid2">
+      <div class="field-row">
+        <label>Industry keywords <span class="label-hint">Enter to add</span></label>
+        <div class="tag-input-wrap" onclick="this.querySelector('input').focus()">
+          <div id="industryTags"></div>
+          <input class="tag-input" id="industryInput" placeholder='e.g. "SaaS"' onkeydown="handleTagInput(event,'industry')">
+        </div>
+      </div>
+      <div class="field-row">
+        <label>Company size</label>
+        <select id="companySize" onchange="buildString()">
+          <option value="">Any size</option>
+          <option value="1-10">1–10 employees</option>
+          <option value="11-50">11–50 employees</option>
+          <option value="51-200">51–200 employees</option>
+          <option value="201-500">201–500 employees</option>
+          <option value="501-1000">501–1,000 employees</option>
+          <option value="1001-5000">1,001–5,000 employees</option>
+          <option value="5001-10000">5,001–10,000 employees</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-row">
+      <label>Exclude companies <span class="label-hint">Enter to add</span></label>
+      <div class="tag-input-wrap" onclick="this.querySelector('input').focus()">
+        <div id="companyExcludeTags"></div>
+        <input class="tag-input" id="companyExcludeInput" placeholder='e.g. "Competitor Inc"' onkeydown="handleTagInput(event,'companyExclude')">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Location & seniority</div>
+    <div class="grid2">
+      <div class="field-row">
+        <label>Location keywords <span class="label-hint">Enter to add</span></label>
+        <div class="tag-input-wrap" onclick="this.querySelector('input').focus()">
+          <div id="locationTags"></div>
+          <input class="tag-input" id="locationInput" placeholder='e.g. "Mumbai" "Delhi"' onkeydown="handleTagInput(event,'location')">
+        </div>
+      </div>
+      <div class="field-row">
+        <label>Seniority level</label>
+        <select id="seniority" onchange="buildString()">
+          <option value="">Any seniority</option>
+          <option value="Owner">Owner</option>
+          <option value="Founder">Founder</option>
+          <option value="CXO">C-Suite (CXO)</option>
+          <option value="VP">VP</option>
+          <option value="Director">Director</option>
+          <option value="Manager">Manager</option>
+          <option value="Senior">Senior</option>
+          <option value="Entry">Entry Level</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Keywords in profile</div>
+    <div class="operator-row">
+      <span class="op-label">Connect with:</span>
+      <button class="op-btn active-or" id="kwOp-OR" onclick="setOp('kw','OR')">OR</button>
+      <button class="op-btn" id="kwOp-AND" onclick="setOp('kw','AND')">AND</button>
+    </div>
+    <div class="field-row">
+      <label>Must include <span class="label-hint">Enter to add</span></label>
+      <div class="tag-input-wrap" onclick="this.querySelector('input').focus()">
+        <div id="kwIncludeTags"></div>
+        <input class="tag-input" id="kwIncludeInput" placeholder='e.g. "B2B" "lead generation"' onkeydown="handleTagInput(event,'kwInclude')">
+      </div>
+    </div>
+    <div class="field-row">
+      <label>Must exclude <span class="label-hint">Enter to add</span></label>
+      <div class="tag-input-wrap" onclick="this.querySelector('input').focus()">
+        <div id="kwExcludeTags"></div>
+        <input class="tag-input" id="kwExcludeInput" placeholder='e.g. "freelance" "student"' onkeydown="handleTagInput(event,'kwExclude')">
+      </div>
+    </div>
+  </div>
+
+  <div class="output-section">
+    <div class="output-label">Generated boolean string</div>
+    <div class="output-string" id="outputString">Start adding terms above to generate your search string...</div>
+    <div class="char-count" id="charCount"></div>
+    <div class="output-actions">
+      <button class="btn-copy" id="copyBtn" onclick="copyString()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        Copy string
+      </button>
+      <a class="btn-open" id="liSearchBtn" href="#" target="_blank" onclick="openLinkedIn(event)">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Open in LinkedIn
+      </a>
+      <button class="btn-reset" onclick="resetAll()">Reset all</button>
+    </div>
+  </div>
+
+  <div class="tips">
+    <div class="tips-title">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Pro tips for Sales Navigator
+    </div>
+    <ul>
+      <li>Phrases in quotes find exact matches — use for specific job titles</li>
+      <li>OR broadens results (VP OR Director), AND narrows them</li>
+      <li>NOT removes unwanted profiles — always exclude interns, students, freelancers</li>
+      <li>LinkedIn search strings work best under 1,000 characters</li>
+      <li>Combine with Sales Navigator filters (geography, industry) for laser precision</li>
+    </ul>
+  </div>
+
+</div>
+
+<script>
+const state = {
+  titleInclude: [], titleExclude: [],
+  industry: [], companyExclude: [],
+  location: [],
+  kwInclude: [], kwExclude: [],
+  titleOp: 'OR', kwOp: 'OR'
+};
+
+function setOp(field, op) {
+  state[field + 'Op'] = op;
+  ['OR','AND'].forEach(o => {
+    const btn = document.getElementById(field + 'Op-' + o);
+    btn.className = 'op-btn' + (o === op ? (o === 'OR' ? ' active-or' : ' active-and') : '');
+  });
+  buildString();
+}
+
+function handleTagInput(e, field) {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    const input = e.target;
+    const val = input.value.trim().replace(/^,/, '').trim();
+    if (val) addTag(field, val);
+    input.value = '';
+  }
+  if (e.key === 'Backspace' && e.target.value === '' && state[field].length > 0) {
+    state[field].pop();
+    renderTags(field);
+    buildString();
+  }
+}
+
+function addTag(field, val) {
+  if (!state[field].includes(val)) {
+    state[field].push(val);
+    renderTags(field);
+    buildString();
+  }
+}
+
+function removeTag(field, val) {
+  state[field] = state[field].filter(v => v !== val);
+  renderTags(field);
+  buildString();
+}
+
+function renderTags(field) {
+  const container = document.getElementById(field + 'Tags');
+  const isExclude = field.includes('Exclude');
+  container.innerHTML = state[field].map(v => `
+    <div class="tag ${isExclude ? 'not-tag' : ''}">
+      ${isExclude ? 'NOT ' : ''}"${v}"
+      <span class="tag-remove" onclick="removeTag('${field}','${v.replace(/'/g,"\\'")}')">×</span>
+    </div>
+  `).join('');
+}
+
+function buildString() {
+  const parts = [];
+
+  // Titles
+  if (state.titleInclude.length > 0) {
+    const titleStr = state.titleInclude.map(t => `title:"${t}"`).join(` ${state.titleOp} `);
+    parts.push(state.titleInclude.length > 1 ? `(${titleStr})` : titleStr);
+  }
+  state.titleExclude.forEach(t => parts.push(`NOT title:"${t}"`));
+
+  // Seniority
+  const sen = document.getElementById('seniority').value;
+  if (sen) parts.push(`"${sen}"`);
+
+  // Industry
+  if (state.industry.length > 0) {
+    const indStr = state.industry.map(i => `"${i}"`).join(' OR ');
+    parts.push(state.industry.length > 1 ? `(${indStr})` : `"${state.industry[0]}"`);
+  }
+
+  // Company size
+  const size = document.getElementById('companySize').value;
+  if (size) parts.push(`company_size:"${size}"`);
+
+  // Company excludes
+  state.companyExclude.forEach(c => parts.push(`NOT company:"${c}"`));
+
+  // Location
+  if (state.location.length > 0) {
+    const locStr = state.location.map(l => `"${l}"`).join(' OR ');
+    parts.push(state.location.length > 1 ? `(${locStr})` : `"${state.location[0]}"`);
+  }
+
+  // Keywords
+  if (state.kwInclude.length > 0) {
+    const kwStr = state.kwInclude.map(k => `"${k}"`).join(` ${state.kwOp} `);
+    parts.push(state.kwInclude.length > 1 ? `(${kwStr})` : `"${state.kwInclude[0]}"`);
+  }
+  state.kwExclude.forEach(k => parts.push(`NOT "${k}"`));
+
+  const raw = parts.join(' AND ');
+
+  const outputEl = document.getElementById('outputString');
+  const countEl = document.getElementById('charCount');
+
+  if (!raw) {
+    outputEl.innerHTML = '<span style="color:rgba(255,255,255,0.3);">Start adding terms above to generate your search string...</span>';
+    countEl.textContent = '';
+    return;
+  }
+
+  // Syntax highlight
+  const highlighted = raw
+    .replace(/\b(AND)\b/g, '<span class="kw-and">AND</span>')
+    .replace(/\b(OR)\b/g, '<span class="kw-or">OR</span>')
+    .replace(/\b(NOT)\b/g, '<span class="kw-not">NOT</span>')
+    .replace(/(title:|company_size:|company:)/g, '<span class="kw-field">$1</span>')
+    .replace(/"([^"]+)"/g, '<span class="kw-phrase">"$1"</span>');
+
+  outputEl.innerHTML = highlighted;
+
+  const len = raw.length;
+  countEl.textContent = `${len} characters`;
+  countEl.className = 'char-count' + (len > 1000 ? ' warn' : '') + (len > 1500 ? ' error' : '');
+  if (len > 1000) countEl.textContent += ' — consider simplifying for best results';
+
+  window._currentString = raw;
+}
+
+function copyString() {
+  if (!window._currentString) return;
+  navigator.clipboard.writeText(window._currentString).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.innerHTML = `<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy string`;
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+function openLinkedIn(e) {
+  e.preventDefault();
+  if (!window._currentString) return;
+  const url = `https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(window._currentString)}`;
+  window.open(url, '_blank');
+}
+
+function resetAll() {
+  ['titleInclude','titleExclude','industry','companyExclude','location','kwInclude','kwExclude'].forEach(f => {
+    state[f] = [];
+    renderTags(f);
+    const input = document.getElementById(f + 'Input');
+    if (input) input.value = '';
+  });
+  document.getElementById('seniority').value = '';
+  document.getElementById('companySize').value = '';
+  setOp('title','OR');
+  setOp('kw','OR');
+  buildString();
+}
+
+const PRESETS = {
+  saas: {
+    titleInclude: ['VP Sales','Head of Sales','Chief Revenue Officer','Sales Director','VP of Revenue'],
+    titleExclude: ['Intern','Junior','Assistant'],
+    industry: ['SaaS','Software','B2B'],
+    kwInclude: ['pipeline','revenue','growth'],
+    kwExclude: ['freelance','student']
+  },
+  hr: {
+    titleInclude: ['HR Director','Head of HR','VP People','Chief People Officer','Talent Acquisition'],
+    titleExclude: ['Intern','Coordinator'],
+    industry: ['Human Resources','Recruitment','Staffing'],
+    kwInclude: ['hiring','talent','workforce'],
+    kwExclude: ['student']
+  },
+  finance: {
+    titleInclude: ['CFO','Finance Director','VP Finance','Head of Finance','Controller'],
+    titleExclude: ['Analyst','Associate','Intern'],
+    industry: ['Financial Services','Fintech','Banking'],
+    kwInclude: ['financial planning','budgeting','P&L'],
+    kwExclude: ['freelance']
+  },
+  startup: {
+    titleInclude: ['Founder','Co-Founder','CEO','Managing Director'],
+    titleExclude: [],
+    industry: ['Startup','Venture Capital','Technology'],
+    kwInclude: ['funded','scale','growth'],
+    kwExclude: ['student','unemployed']
+  },
+  marketing: {
+    titleInclude: ['CMO','VP Marketing','Head of Marketing','Marketing Director','Growth Lead'],
+    titleExclude: ['Intern','Coordinator','Executive'],
+    industry: ['Marketing','Advertising','Digital Marketing'],
+    kwInclude: ['demand generation','B2B marketing','campaigns'],
+    kwExclude: ['freelance','student']
+  },
+  strategic: {
+    titleInclude: ['CEO','COO','Managing Director','President','Chief Strategy Officer','General Manager','Executive Director'],
+    titleExclude: ['Intern','Assistant','Junior'],
+    industry: ['Management Consulting','Corporate Strategy','Business Development'],
+    kwInclude: ['strategic planning','business growth','P&L','decision maker'],
+    kwExclude: ['student','freelance','retired']
+  },
+  investors: {
+    titleInclude: ['Angel Investor','Venture Capitalist','Partner','General Partner','Managing Partner','Investment Director','Portfolio Manager','Fund Manager','Principal'],
+    titleExclude: ['Intern','Analyst'],
+    industry: ['Venture Capital','Private Equity','Investment Management','Angel Investing'],
+    kwInclude: ['portfolio','investments','funding','LP','deal flow'],
+    kwExclude: ['student','looking for work']
+  },
+  operations: {
+    titleInclude: ['COO','VP Operations','Head of Operations','Operations Director','Chief Operating Officer','Director of Operations'],
+    titleExclude: ['Intern','Coordinator','Junior'],
+    industry: ['Operations','Supply Chain','Logistics','Manufacturing'],
+    kwInclude: ['process improvement','scale','efficiency','operations'],
+    kwExclude: ['freelance','student']
+  },
+  technology: {
+    titleInclude: ['CTO','VP Engineering','Head of Technology','IT Director','Chief Information Officer','VP Product','Head of IT'],
+    titleExclude: ['Intern','Junior','Associate'],
+    industry: ['Information Technology','Software Development','Cloud Computing'],
+    kwInclude: ['digital transformation','cloud','infrastructure','tech stack'],
+    kwExclude: ['student','freelance']
+  },
+  consulting: {
+    titleInclude: ['Managing Consultant','Principal Consultant','Strategy Consultant','Business Advisor','Partner','Independent Consultant'],
+    titleExclude: ['Intern','Junior','Graduate'],
+    industry: ['Management Consulting','Business Consulting','Advisory'],
+    kwInclude: ['advisory','strategy','transformation','business consulting'],
+    kwExclude: ['student','unemployed']
+  },
+  ecommerce: {
+    titleInclude: ['Head of E-commerce','VP E-commerce','Digital Commerce Manager','Director of Online Sales','Chief Digital Officer'],
+    titleExclude: ['Intern','Assistant','Junior'],
+    industry: ['E-commerce','Retail','Consumer Goods','Direct to Consumer'],
+    kwInclude: ['online sales','D2C','conversion','customer acquisition'],
+    kwExclude: ['student','freelance']
+  },
+  realestate: {
+    titleInclude: ['Real Estate Developer','Property Director','Head of Real Estate','Chief Investment Officer','Real Estate Investor','MD Real Estate'],
+    titleExclude: ['Intern','Junior Agent'],
+    industry: ['Real Estate','Property Management','Construction','Infrastructure'],
+    kwInclude: ['property development','real estate investment','portfolio','acquisitions'],
+    kwExclude: ['student','freelance']
+  }
+};
+
+function loadPreset(name) {
+  resetAll();
+  const p = PRESETS[name];
+  p.titleInclude.forEach(v => { state.titleInclude.push(v); });
+  p.titleExclude.forEach(v => { state.titleExclude.push(v); });
+  p.industry.forEach(v => { state.industry.push(v); });
+  p.kwInclude.forEach(v => { state.kwInclude.push(v); });
+  if (p.kwExclude) p.kwExclude.forEach(v => { state.kwExclude.push(v); });
+  ['titleInclude','titleExclude','industry','kwInclude','kwExclude'].forEach(renderTags);
+  buildString();
+}
+
+buildString();
+</script>
+</body>
+</html>
